@@ -10,10 +10,26 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2020_10_19_192108) do
+ActiveRecord::Schema.define(version: 2020_10_19_205117) do
+
+  create_table "channels", force: :cascade do |t|
+  end
+
+  create_table "messages", force: :cascade do |t|
+    t.text "content"
+    t.integer "user_id"
+    t.integer "channel_id"
+  end
+
+  create_table "reactions", force: :cascade do |t|
+    t.integer "user_id"
+    t.text "emoji"
+    t.integer "message_id"
+  end
 
   create_table "users", force: :cascade do |t|
     t.string "username"
+    t.integer "channel_id"
   end
 
 end
