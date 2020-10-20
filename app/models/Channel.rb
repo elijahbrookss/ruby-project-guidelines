@@ -4,19 +4,29 @@ class Channel < ActiveRecord::Base
 
     def display_messages
         messages = self.messages
-        messages.each do |message|
-            puts "#{message.user.username}: #{message.content}"
-            display_reactions(message)
+        if messages.length > 0 then
+            messages.each do |message|
+                puts "#{message.user.username}: #{message.content}"
+                display_reactions(message)
+            end
+        else
+            puts "This is a brand new channel! Input something to change"
+        end
+
+    end
+    
+    def self.display_channels
+        self.all.each do |channel|
+            puts channel.id
         end
     end
     
-
     private
 
     def display_reactions(message)
         reactions = message.reactions
         reactions.each do |reaction|
-            print "#{reaction.emoji}"
+            print "#{reaction.emoji} "
         end
         puts
     end

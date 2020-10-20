@@ -1,6 +1,3 @@
 require_relative '../config/environment'
 
-
-
-
-puts "HELLO WORLD"
+ViscordApp.new.run
