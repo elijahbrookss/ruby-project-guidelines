@@ -3,12 +3,14 @@ class Channel < ActiveRecord::Base
     has_many :messages
 
     def display_messages
+        puts "================================================================"
         messages = self.messages
         if messages.length > 0 then
             messages.each do |message|
                 puts "#{message.user.username}: #{message.content}"
                 display_reactions(message)
             end
+            puts "================================================================"
         else
             puts "This is a brand new channel! Input something to change"
         end
@@ -17,7 +19,7 @@ class Channel < ActiveRecord::Base
     
     def self.display_channels
         self.all.each do |channel|
-            puts channel.id
+            puts channel.name
         end
     end
     
