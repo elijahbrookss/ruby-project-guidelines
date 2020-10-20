@@ -10,11 +10,10 @@ class Channel < ActiveRecord::Base
                 puts "#{message.user.username}: #{message.content}"
                 display_reactions(message)
             end
-            puts "================================================================"
         else
-            puts "This is a brand new channel! Input something to change"
+            puts "This is a brand new channel, create the first message."
         end
-
+        puts "================================================================"
     end
     
     def self.display_channels

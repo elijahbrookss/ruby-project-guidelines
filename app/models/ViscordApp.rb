@@ -1,32 +1,81 @@
 class ViscordApp
-
     attr_reader :user, :channel
 
     def run
         display_intro
         user_input = login_prompt
         init_user(user_input)
+
         main_loop
     end
 
     private
 
     def main_loop
-        channel_prompt
-        channel_loop
+        prompt_entrance_menu
+    end
+
+    def prompt_entrance_menu
+        puts "1) Your Channels\n2) Explore Channels"
+        print "Input: "
+        input = get_input
+
+        case input
+        when '1'
+            messages = User.find(@user.id).messages
+            channel_ids = messages.map{ |message| message.channel_id }.uniq             
+            channels = channel_ids.map{ |channel_id| Channel.find(channel_id) }
+
+            if channels
+                question = "Choose a channel to join: "
+                prompt = nil
+                channel = prompt_user_messages(channels, question, prompt)
+                @channel = channel[:message]
+                channel_loop
+            else
+                puts "You don't have any channels. Go to explore channels to join one"
+                prompt_entrance_menu
+            end        
+        when '2'
+            channel_explore
+        end
+
     end
 
     def init_user(input)
         @user = User.find_by(username: input)
         if @user then
-            puts "You have an account, lead to passwords"
+            password_prompt
         else
-            puts "You don't have an account"
+            @user = User.create(username: input)
+            new_user_prompt
         end
-
-        # @user = User.find_or_create_by(username: input)
     end
 
+    def password_prompt
+        puts "Welcome back, #{@user.username}, just enter your password and you'll be ready to go!"
+        password_entry
+    end
+
+    def password_entry
+        print "Enter password: "
+        input = get_input
+        if input != @user.password then
+            puts "Wrong password! Try again."
+            password_entry
+        end
+        puts "Password accepted."
+        sleep(1.5)
+        load
+    end
+
+    def new_user_prompt
+        puts "Hi #{@user.username}, welcome to Viscord"
+        print "Create a new password for login: "
+        input = get_input
+        User.update(@user.id, password: input)
+    end
+    
     def display_messages
         Channel.find(@channel.id).display_messages
     end
@@ -61,7 +110,7 @@ class ViscordApp
         )
     end
 
-    def channel_prompt
+    def channel_explore
         Channel.display_channels
         print "Choose a channel from the list: "
         input = get_input
@@ -69,8 +118,9 @@ class ViscordApp
         @channel = Channel.find_by(name: input)
         if !@channel then
             puts "#{input} isn't a valid channel name, try again!"
-            channel_prompt
+            channel_explore
         end
+        channel_loop
     end
 
     def login_prompt
@@ -111,8 +161,13 @@ class ViscordApp
     def prompt_user_messages(messages = Message.where(user_id: @user.id), question, prompt)
         if messages.length > 0 then
             messages.each_with_index do |message, index|
-                puts "#{index+1}) #{message.content}"
+                if message.class == Message then
+                    puts "#{index+1}) #{message.content}"
+                else
+                    puts "#{index+1}) #{message.name}"
+                end
             end
+
             print question
             input = get_input.to_i
             message = messages[input-1]
@@ -129,7 +184,7 @@ class ViscordApp
                 nil
             end
         else
-            puts "Silly, you don't have any messages. Create some messages!"
+            puts "Not a valid choice."
         end    
     end
 
@@ -174,10 +229,15 @@ class ViscordApp
     def display_intro  
         puts "VISCORD" #=> Make a creative text later
         puts "Loading App" #=> Make a more creative loading screen
+        load
+    end
+
+    def load
         10.times do |t|
             print "."
             sleep(0.2)
         end
         puts
     end
+
 end
