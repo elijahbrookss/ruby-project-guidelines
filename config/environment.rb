@@ -7,3 +7,4 @@ ActiveRecord::Base.logger = nil
 
 require_all 'lib'
 require_all 'app'
+require 'colorize'
