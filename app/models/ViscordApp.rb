@@ -1,7 +1,6 @@
 class ViscordApp
 
     PROMPT = TTY::Prompt.new
-
     attr_reader :user, :channel
 
     def run
