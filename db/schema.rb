@@ -10,10 +10,23 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2020_10_20_211136) do
+ActiveRecord::Schema.define(version: 2020_10_21_223742) do
 
   create_table "channels", force: :cascade do |t|
     t.string "name"
+    t.boolean "masked"
+  end
+
+  create_table "direct_channels", force: :cascade do |t|
+    t.string "name"
+    t.integer "user1"
+    t.integer "user2"
+    t.integer "channel_id"
+  end
+
+  create_table "friends", force: :cascade do |t|
+    t.integer "user_id"
+    t.integer "friend_id"
   end
 
   create_table "messages", force: :cascade do |t|

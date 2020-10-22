@@ -24,8 +24,10 @@ class Channel < ActiveRecord::Base
     def self.display_channels
         choice_hash = {}
         self.all.each_with_index do |channel, index|
-            value = "#{channel.name}"
-            choice_hash[value] = index
+            if !(channel.masked) then
+                value = "#{channel.name}"
+                choice_hash[value] = index
+            end
         end
         new_channel = "Make a new channel"
         go_back =  "Go Back"

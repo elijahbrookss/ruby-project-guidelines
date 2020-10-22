@@ -20,16 +20,14 @@ class ViscordApp
     end
 
     def prompt_entrance_menu
-        puts "1) Your Channels\n2) Explore Channels\n3) Logout"
+        puts "1) Direct Messages\n2) Explore Channels\n3) Friends\n4) Logout\n"
         input = get_input
 
         logout = false
 
         case input
         when '1'
-            messages = User.find(@user.id).messages
-            channel_ids = messages.map{ |message| message.channel_id }.uniq             
-            channels = channel_ids.map{ |channel_id| Channel.find(channel_id) }
+            channels = get_user_channels
 
             if channels.length > 0
                 question = "Choose a channel to join: "
@@ -40,7 +38,7 @@ class ViscordApp
                     channel_loop
                 end
             else
-                puts "You don't have any channels. Go to explore channels to join one\n\n"
+                puts "You don't have any private messages. Add some friends to make one.\n\n"
                 main_loop
 
                 return
@@ -48,6 +46,8 @@ class ViscordApp
         when '2'
             channel_explore
         when '3'
+            friends_menu
+        when '4'
             logout = true
         end
         if !logout then
@@ -66,6 +66,77 @@ class ViscordApp
         puts "Thanks #{@user.username} come again!"
     end
 
+    def friends_menu
+        friends = Friend.where(user_id: @user.id)
+
+        input = PROMPT.select("Friends") do |menu|
+            menu.choice "Add Friends", 1
+            menu.choice "List Friends", 2
+            menu.choice "Go back", 3
+        end
+    
+
+        case input
+        when 1
+            friend = list_users
+            if !(friend == "Go back") then
+                Friend.create(user_id: @user.id, friend_id: User.find_by(username: friend).id)
+                puts "Friend Added!"
+
+                sleep(2)
+            end
+        when 2
+            input = list_friends
+            if !(input == "Go back") then
+                friend_id = User.find_by(username: input).id
+                channel_1 = Direct_Channel.find_by(user1: @user.id, user2: friend_id)
+                channel_2 = Direct_Channel.find_by(user1: friend_id, user2: @user.id)
+
+                if !(channel_1 || channel_2) then
+                    channel = Channel.create(name: "Direct Message", masked: true)
+                    Direct_Channel.create(user1: @user.id, user2: friend_id, channel_id: channel.id)
+                else
+                    if channel_1 then
+                        channel = Channel.find(channel_1.channel_id)
+                    else
+                        channel = Channel.find(channel_2.channel_id)
+                    end
+                end
+
+                @channel = channel
+                channel_loop
+            end
+        end
+    end
+
+    def list_users
+       prompt_list(User, "Add Friends")
+    end
+
+    def prompt_list(_class, title)
+        choice_hash = {}
+        _class.all.each_with_index do |instance, index|
+            if  _class == Friend then
+                if instance.user_id == @user.id then
+                    value = "#{User.find(instance.friend_id).username}"
+                    choice_hash[value] = value
+                elsif instance.friend_id == @user.id then
+                    value  = "#{User.find(instance.user_id).username}"
+                    choice_hash[value] = value
+                end
+            elsif instance.id != @user.id && !(Friend.find_by(user_id: instance.id)) && !(Friend.find_by(user_id: instance.id))
+                value = "#{instance.username}"
+                choice_hash[value] = value
+            end
+        end
+        choice_hash["Go back"] = "Go back"
+        PROMPT.select(title, choice_hash)
+    end
+
+    def list_friends
+        prompt_list(Friend, "My Friends")
+    end
+
     def init_user(input)
         @user = User.find_by(username: input)
         if @user then
@@ -77,7 +148,7 @@ class ViscordApp
     end
 
     def password_prompt
-        puts "Welcome back, #{@user.username}, just enter your password and you'll be ready to go!"
+        puts "Welcome back, #{@user.username}"
         password_entry
     end
 
@@ -89,7 +160,6 @@ class ViscordApp
 
             return
         end
-        puts "Password accepted"
         sleep(1.5)
         system("clear")
         puts "
@@ -158,6 +228,19 @@ class ViscordApp
         return nil
     end
 
+    def get_user_channels
+        messages = User.find(@user.id).messages
+        channel_ids = messages.map{ |message| message.channel_id }.uniq             
+        channels = channel_ids.map{ |channel_id| 
+
+        if Direct_Channel.find_by(channel_id: channel_id) then
+            Channel.find(channel_id)
+        end
+
+        }.compact
+
+    end
+
     def channel_explore
         input = Channel.display_channels
         @channel = Channel.find_by(name: input) || get_channel_from_input(input)
@@ -214,9 +297,20 @@ class ViscordApp
         if messages.length > 0 then
             messages.each_with_index do |message, index|
                 if message.class == Message then
-                    value = "#{message.content}"
+                    if message.channel_id == @channel.id then
+                        value = "#{message.content}"
+                    end
                 else
-                    value = "#{message.name}"
+                    dc = Direct_Channel.find_by(channel_id: message.id) 
+                    if dc then
+                        if dc.user1 == @user.id then
+                            value = User.find(dc.user2).username
+                        else
+                            value = User.find(dc.user1).username
+                        end
+                    else
+                        value = "#{message.name}"
+                    end
                 end
 
                 choices[value] = index + 1
@@ -229,7 +323,6 @@ class ViscordApp
 
             if message then
                 if prompt then
-                    
                     input = PROMPT.ask(prompt)
                 end
                 return {message: message, input: input}
@@ -245,7 +338,7 @@ class ViscordApp
 
     def prompt_user_message
         question = "Which message would you like to edit?: "
-        prompt = "Type your edit: "
+        prompt = "Edit your message: "
         hash = prompt_user_messages(question = question, prompt = prompt)
         if hash then
             update(hash[:message].id, hash[:input] )
