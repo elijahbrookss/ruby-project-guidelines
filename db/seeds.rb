@@ -7,4 +7,7 @@ Friend.destroy_all
 Direct_Channel.destroy_all
 
 
-main_chat = Channel.create(name: "Main Chat")
+Channel.create(name: "Main Chat")
+
+User.create(username: "user1", password: "abc123")
+User.create(username: "user2", password: "abc123")

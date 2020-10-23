@@ -29,7 +29,7 @@ class ViscordApp
             channels = get_user_channels
 
             if channels.length > 0
-                question = "Choose a channel to join: "
+                question = "Choose a channel to join:"
                 prompt = nil
                 channel = prompt_user_messages(channels, question, prompt)
                 if channel then
@@ -38,10 +38,11 @@ class ViscordApp
                 end
             else
                 puts "You don't have any private messages. Add some friends to make one.\n\n"
+                PROMPT.keypress("Press any key to continue")
                 main_loop
 
                 return
-            end        
+            end
         when '2'
             channel_explore
         when '3'
@@ -56,10 +57,10 @@ class ViscordApp
         end
         system("clear")
         puts "
-        
-        
-        
-        
+
+
+
+
         "
         load
         puts "Thanks #{@user.username} come again!"
@@ -73,7 +74,7 @@ class ViscordApp
             menu.choice "List Friends", 2
             menu.choice "Go back", 3
         end
-    
+
 
         case input
         when 1
@@ -152,7 +153,7 @@ class ViscordApp
     end
 
     def password_entry
-        input = PROMPT.mask("Enter password: ")
+        input = PROMPT.mask("Enter password:")
         if input != @user.password then
             puts "Wrong password! Try again."
             password_entry
@@ -162,29 +163,39 @@ class ViscordApp
         sleep(1.5)
         system("clear")
         puts "
-        
-        
-        
-        
+
+
+
+
+
         "
         load
     end
 
     def new_user_prompt
         puts "Hi #{@user.username}, welcome to Viscord"
-        input = PROMPT.mask("Create a new password for login: ")
+        input = PROMPT.mask("Create a new password for login:")
         User.update(@user.id, password: input)
+        system("clear")
+        puts "
+
+
+
+
+
+        "
+        load
     end
-    
+
     def display_messages
         system("clear")
         Channel.find(@channel.id).display_messages
     end
 
-    def get_input(question = "Input: ")
+    def get_input(question = "Input:")
         input = PROMPT.ask(question)
     end
-    
+
     def delete_user_message
         prompt_user_delete
     end
@@ -203,8 +214,8 @@ class ViscordApp
 
     def create_reaction(message_id, input)
         Reaction.create(
-            user_id: @user.id, 
-            emoji: input, 
+            user_id: @user.id,
+            emoji: input,
             message_id: message_id.id
         )
     end
@@ -229,8 +240,8 @@ class ViscordApp
 
     def get_user_channels
         messages = User.find(@user.id).messages
-        channel_ids = messages.map{ |message| message.channel_id }.uniq             
-        channels = channel_ids.map{ |channel_id| 
+        channel_ids = messages.map{ |message| message.channel_id }.uniq
+        channels = channel_ids.map{ |channel_id|
 
         if Direct_Channel.find_by(channel_id: channel_id) then
             Channel.find(channel_id)
@@ -254,7 +265,7 @@ class ViscordApp
     end
 
     def login_prompt
-        input = get_input("Enter username: ")
+        input = get_input("Enter username:")
     end
 
     def prompt_channel_loop
@@ -268,7 +279,7 @@ class ViscordApp
             menu.choice "Exit channel", '5'
         end
     end
-    
+
     def channel_loop
         input = true
         while input != '5' do
@@ -300,7 +311,7 @@ class ViscordApp
                         value = "#{message.content}"
                     end
                 else
-                    dc = Direct_Channel.find_by(channel_id: message.id) 
+                    dc = Direct_Channel.find_by(channel_id: message.id)
                     if dc then
                         if dc.user1 == @user.id then
                             value = User.find(dc.user2).username
@@ -332,12 +343,12 @@ class ViscordApp
             end
         else
             puts "Not a valid choice."
-        end    
+        end
     end
 
     def prompt_user_message
-        question = "Which message would you like to edit?: "
-        prompt = "Edit your message: "
+        question = "Which message would you like to edit?:"
+        prompt = "Edit your message:"
         hash = prompt_user_messages(question = question, prompt = prompt)
         if hash then
             update(hash[:message].id, hash[:input] )
@@ -345,7 +356,7 @@ class ViscordApp
     end
 
     def prompt_user_delete
-        question = "Which message would you like to delete?: "
+        question = "Which message would you like to delete?:"
         prompt = nil
         hash = prompt_user_messages(question = question, prompt = prompt)
         if hash then
@@ -354,8 +365,8 @@ class ViscordApp
     end
 
     def display_react_menu
-        question = "Which message would you like to react to?: "
-        prompt = "How do you want to react?: "
+        question = "Which message would you like to react to?:"
+        prompt = "How do you want to react?:"
         messages = Channel.find(channel.id).messages
         hash = prompt_user_messages(messages, question, prompt)
 
@@ -365,11 +376,11 @@ class ViscordApp
     end
 
     def make_new_message
-        question =  "Type a message and press enter to send: "
+        question =  "Type a message and press enter to send:"
         input = PROMPT.ask(question)
         Message.create(
-            content: input, 
-            user_id: @user.id, 
+            content: input,
+            user_id: @user.id,
             channel_id: @channel.id
         )
     end
@@ -377,34 +388,34 @@ class ViscordApp
     def display_intro
         system("clear")
         puts "
-                                                                                      
-                ▀████▀   ▀███▀████▀▄█▀▀▀█▄█ ▄▄█▀▀▀█▄█ ▄▄█▀▀██▄ ▀███▀▀▀██▄ ▀███▀▀▀██▄  
+
+                ▀████▀   ▀███▀████▀▄█▀▀▀█▄█ ▄▄█▀▀▀█▄█ ▄▄█▀▀██▄ ▀███▀▀▀██▄ ▀███▀▀▀██▄
                   ▀██     ▄█   ██ ▄██    ▀███▀     ▀███▀    ▀██▄ ██   ▀██▄  ██    ▀██▄
                    ██▄   ▄█    ██ ▀███▄   ██▀       ▀█▀      ▀██ ██   ▄██   ██     ▀██
                     ██▄  █▀    ██   ▀█████▄█        ██        ██ ███████    ██      ██
                     ▀██ █▀     ██ ▄     ▀███▄       ██▄      ▄██ ██  ██▄    ██     ▄██
                      ▄██▄      ██ ██     ████▄     ▄▀██▄    ▄██▀ ██   ▀██▄  ██    ▄██▀
-                      ██     ▄████▄▀█████▀  ▀▀█████▀  ▀▀████▀▀ ▄████▄ ▄███▄████████▀  
-                                                                                      
-                                                                                      
+                      ██     ▄████▄▀█████▀  ▀▀█████▀  ▀▀████▀▀ ▄████▄ ▄███▄████████▀
 
-                                                                                    
+
+
+
         ".magenta
 
         PROMPT.keypress
         system("clear")
         puts "
-  
-                                                      ▄▄   ▄▄                     
-                    ▀████▀                          ▀███   ██                     
-                      ██                              ██                          
+
+                                                      ▄▄   ▄▄
+                    ▀████▀                          ▀███   ██
+                      ██                              ██
                       ██       ▄██▀██▄ ▄█▀██▄    ▄█▀▀███ ▀███ ▀████████▄  ▄█▀█████
-                      ██      ██▀   ▀███   ██  ▄██    ██   ██   ██    ██ ▄██  ██  
-                      ██     ▄██     ██▄█████  ███    ██   ██   ██    ██ ▀█████▀  
-                      ██    ▄███▄   ▄███   ██  ▀██    ██   ██   ██    ██ ██       
-                    ██████████ ▀█████▀▀████▀██▄ ▀████▀███▄████▄████  ████▄███████ 
+                      ██      ██▀   ▀███   ██  ▄██    ██   ██   ██    ██ ▄██  ██
+                      ██     ▄██     ██▄█████  ███    ██   ██   ██    ██ ▀█████▀
+                      ██    ▄███▄   ▄███   ██  ▀██    ██   ██   ██    ██ ██
+                    ██████████ ▀█████▀▀████▀██▄ ▀████▀███▄████▄████  ████▄███████
                                                                          █▀     ██
-                                                                         ██████▀  
+                                                                         ██████▀
 
 
         ".magenta
@@ -412,10 +423,10 @@ class ViscordApp
     end
 
     def load
-        print"              o".magenta
-        12.times do |t|
-            print"     o".magenta
-           sleep(rand(0.1 .. 0.6))
+        print"      o".magenta
+        30.times do |t|
+            print"  o".magenta
+           sleep(rand(0.1 .. 0.5))
         end
         puts
         system("clear")
